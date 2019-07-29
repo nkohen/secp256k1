@@ -28,7 +28,7 @@ import static org.bitcoin.NativeSecp256k1Util.*;
 /**
  * <p>This class holds native methods to handle ECDSA verification.</p>
  *
- * <p>You can find an example library that can be used for this at https://github.com/bitcoin-core/secp256k1</p>
+ * <p>You can find an example library that can be used for this at https://github.com/bitcoin/secp256k1</p>
  *
  * <p>To build secp256k1 for use with bitcoinj, run
  * `./configure --enable-jni --enable-experimental --enable-module-ecdh`
@@ -458,6 +458,75 @@ public class NativeSecp256k1 {
     }
 
     /**
+     * libsecp256k1 Create a Schnorr signature.
+     *
+     * @param data Message hash, 32 bytes
+     * @param seckey Secret key, 32 bytes
+     * @return sig byte array of signature
+     */
+    public static byte[] schnorrSign(byte[] data, byte[] seckey) throws AssertFailException {
+        checkArgument(data.length == 32 && seckey.length <= 32);
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < data.length + seckey.length) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 32);
+
+            nativeECDSABuffer.set(byteBuff);
+        }
+        byteBuff.rewind();
+        byteBuff.put(data);
+        byteBuff.put(seckey);
+
+        byte[][] retByteArray;
+
+        r.lock();
+        try {
+            retByteArray = secp256k1_schnorrsig_sign(byteBuff, Secp256k1Context.getContext());
+        } finally {
+            r.unlock();
+        }
+
+        byte[] sigArr = retByteArray[0];
+        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
+
+        assertEquals(sigArr.length, 64, "Got bad signature length.");
+
+        return retVal == 0 ? new byte[0] : sigArr;
+    }
+
+    /**
+     * Verifies the given Schnorr signature in native code.
+     * Calling when enabled == false is undefined (probably library not loaded)
+     *
+     * @param data The data which was signed, must be exactly 32 bytes
+     * @param signature The signature is exactly 64 bytes
+     * @param pub The public key which did the signing which is the same ECDSA
+     */
+    public static boolean schnorrVerify(byte[] data, byte[] signature, byte[] pub) {
+        checkArgument(data.length == 32 && signature.length == 64 && (pub.length == 33 || pub.length == 65));
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < 32 + 64 + pub.length) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 64 + pub.length);
+            byteBuff.order(ByteOrder.nativeOrder());
+
+            nativeECDSABuffer.set(byteBuff);
+        }
+
+        byteBuff.rewind();
+        byteBuff.put(data);
+        byteBuff.put(signature);
+        byteBuff.put(pub);
+
+        r.lock();
+        try {
+            return secp256k1_schnorrsig_verify(byteBuff, Secp256k1Context.getContext(), pub.length) == 1;
+        } finally {
+            r.unlock();
+        }
+    }
+
+    /**
      * libsecp256k1 randomize - updates the context randomization
      *
      * @param seed 32-byte random seed
@@ -505,6 +574,10 @@ public class NativeSecp256k1 {
     private static native byte[][] secp256k1_ec_pubkey_create(ByteBuffer byteBuff, long context, boolean compressed);
 
     private static native byte[][] secp256k1_ec_pubkey_decompress(ByteBuffer byteBuff, long context, int inputLen);
+
+    private static native int secp256k1_schnorrsig_verify(ByteBuffer byteBuff, long context, int pubLen);
+
+    private static native byte[][] secp256k1_schnorrsig_sign(ByteBuffer byteBuff, long context);
 
     private static native byte[][] secp256k1_ecdh(ByteBuffer byteBuff, long context, int inputLen);
 
