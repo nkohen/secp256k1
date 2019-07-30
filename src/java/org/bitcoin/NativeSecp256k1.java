@@ -495,6 +495,45 @@ public class NativeSecp256k1 {
     }
 
     /**
+     * libsecp256k1 Create a Schnorr signature using a specified nonce.
+     *
+     * @param data Message hash, 32 bytes
+     * @param seckey Secret key, 32 bytes
+     * @param nonce One-time nonce, 32 bytes
+     * @return sig byte array of signature
+     */
+    public static byte[] schnorrSignWithNonce(byte[] data, byte[] seckey, byte[] nonce) throws AssertFailException {
+        checkArgument(data.length == 32 && seckey.length <= 32 && nonce.length == 32);
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < data.length + seckey.length + nonce.length) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 32 + 32);
+
+            nativeECDSABuffer.set(byteBuff);
+        }
+        byteBuff.rewind();
+        byteBuff.put(data);
+        byteBuff.put(seckey);
+        byteBuff.put(nonce);
+
+        byte[][] retByteArray;
+
+        r.lock();
+        try {
+            retByteArray = secp256k1_schnorrsig_sign_with_nonce(byteBuff, Secp256k1Context.getContext());
+        } finally {
+            r.unlock();
+        }
+
+        byte[] sigArr = retByteArray[0];
+        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
+
+        assertEquals(sigArr.length, 64, "Got bad signature length.");
+
+        return retVal == 0 ? new byte[0] : sigArr;
+    }
+
+    /**
      * Verifies the given Schnorr signature in native code.
      * Calling when enabled == false is undefined (probably library not loaded)
      *
@@ -578,6 +617,8 @@ public class NativeSecp256k1 {
     private static native int secp256k1_schnorrsig_verify(ByteBuffer byteBuff, long context, int pubLen);
 
     private static native byte[][] secp256k1_schnorrsig_sign(ByteBuffer byteBuff, long context);
+
+    private static native byte[][] secp256k1_schnorrsig_sign_with_nonce(ByteBuffer byteBuff, long context);
 
     private static native byte[][] secp256k1_ecdh(ByteBuffer byteBuff, long context, int inputLen);
 

@@ -380,6 +380,111 @@ public class NativeSecp256k1Test {
         assertEquals(sigStr, "00DA9B08172A9B6F0466A2DEFD817F2D7AB437E0D253CB5395A963866B3574BE00880371D01766935B92D2AB4CD5C8A2A5837EC57FED7660773A05F0DE142380", "testSchnorrSigReal");
     }
 
+    /**
+     * This tests signSchnorrWithNonce() against the first test case
+     */
+    public static void testSchnorrSignWithNonce1() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("0000000000000000000000000000000000000000000000000000000000000000");
+
+        byte[] sec = DatatypeConverter.parseHexBinary("0000000000000000000000000000000000000000000000000000000000000001");
+        byte[] pubkey = DatatypeConverter.parseHexBinary("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
+
+        byte[] nonce = DatatypeConverter.parseHexBinary("0000000000000000000000000000000000000000000000000000000000000002");
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary("c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5");
+
+        byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("58e8f2a1f78f0a591feb75aebecaaa81076e4290894b1c445cc32953604db089");
+
+        byte[] sig1 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig2 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig3 = NativeSecp256k1.schnorrSignWithNonce(data, sec, bipSchnorrNonce);
+
+        String sig1Str = DatatypeConverter.printHexBinary(sig1);
+        String sig2Str = DatatypeConverter.printHexBinary(sig2);
+        String sig3Str = DatatypeConverter.printHexBinary(sig3);
+
+        assertEquals(sig1Str, sig2Str, sig1Str + " should be " + sig2Str);
+        assertNotEquals(sig1Str, sig3Str, sig3Str + " should not be " + sig1Str);
+
+        boolean result = NativeSecp256k1.schnorrVerify(data, sig1, pubkey);
+        assertEquals(result, true, "schnorrSignWithNonce should produce a valid signature");
+
+        String noncePubStr = DatatypeConverter.printHexBinary(noncePubKey);
+
+        assertEquals(sig1Str.substring(0, noncePubStr.length()), noncePubStr, noncePubStr + " should prefix " + sig1Str);
+
+        assertEquals(sig3Str, "787A848E71043D280C50470E8E1532B2DD5D20EE912A45DBDD2BD1DFBF187EF67031A98831859DC34DFFEEDDA86831842CCD0079E1F92AF177F7F22CC1DCED05", "schnorrSignWithNonce 1");
+    }
+
+    /**
+     * This tests signSchnorrWithNonce() against the second test case
+     */
+    public static void testSchnorrSignWithNonce2() throws AssertFailException {
+        byte[] data = DatatypeConverter.parseHexBinary("243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89");
+
+        byte[] sec = DatatypeConverter.parseHexBinary("B7E151628AED2A6ABF7158809CF4F3C762E7160F38B4DA56A784D9045190CFEF");
+        byte[] pubkey = DatatypeConverter.parseHexBinary("02dff1d77f2a671c5f36183726db2341be58feae1da2deced843240f7b502ba659");
+
+        byte[] nonce = DatatypeConverter.parseHexBinary("67cbfa3d322bbabc3e15510789a7ae670cde7aaccd1d7d966aa51345381c6c6f");
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary("2c73d693e9dbf1caec8bb2de97e92b971573ef9773ae56ca4c11add9a8182aaf");
+
+        byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("921d79a6345d16c7cf9df63620753cf69ef45db8731005cb9a3a89d757e0a5e4");
+
+        byte[] sig1 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig2 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig3 = NativeSecp256k1.schnorrSignWithNonce(data, sec, bipSchnorrNonce);
+
+        String sig1Str = DatatypeConverter.printHexBinary(sig1);
+        String sig2Str = DatatypeConverter.printHexBinary(sig2);
+        String sig3Str = DatatypeConverter.printHexBinary(sig3);
+
+        assertEquals(sig1Str, sig2Str, sig1Str + " should be " + sig2Str);
+        assertNotEquals(sig1Str, sig3Str, sig3Str + " should not be " + sig1Str);
+
+        boolean result = NativeSecp256k1.schnorrVerify(data, sig1, pubkey);
+        assertEquals(result, true, "schnorrSignWithNonce should produce a valid signature");
+
+        String noncePubStr = DatatypeConverter.printHexBinary(noncePubKey);
+
+        assertEquals(sig1Str.substring(0, noncePubStr.length()), noncePubStr, noncePubStr + " should prefix " + sig1Str);
+
+        assertEquals(sig3Str, "2A298DACAE57395A15D0795DDBFD1DCB564DA82B0F269BC70A74F8220429BA1D1E51A22CCEC35599B8F266912281F8365FFC2D035A230434A1A64DC59F7013FD", "schnorrSignWithNonce 2");
+    }
+
+    /**
+     * This tests signSchnorrWithNonce() against the third test case
+     */
+    public static void testSchnorrSignWithNonce3() throws AssertFailException {
+        byte[] data = DatatypeConverter.parseHexBinary("5E2D58D8B3BCDF1ABADEC7829054F90DDA9805AAB56C77333024B9D0A508B75C");
+
+        byte[] sec = DatatypeConverter.parseHexBinary("C90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B14E5C7");
+        byte[] pubkey = DatatypeConverter.parseHexBinary("03fac2114c2fbb091527eb7c64ecb11f8021cb45e8e7809d3c0938e4b8c0e5f84b");
+
+        byte[] nonce = DatatypeConverter.parseHexBinary("d00b4d3404e9cfe04b5cc6d9834e6c03acb6d4cf30d10ee733db996c5cc39eba");
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary("ef29043b0cb2bc7fe1174f7bbf950c20436dbb835f8d892819b9a1beba48eb0c");
+
+        byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("688d7ea518846efebd8372ac6b7a3ed82927d078a4572c65cbc8729002a990b6");
+
+        byte[] sig1 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig2 = NativeSecp256k1.schnorrSignWithNonce(data, sec, nonce);
+        byte[] sig3 = NativeSecp256k1.schnorrSignWithNonce(data, sec, bipSchnorrNonce);
+
+        String sig1Str = DatatypeConverter.printHexBinary(sig1);
+        String sig2Str = DatatypeConverter.printHexBinary(sig2);
+        String sig3Str = DatatypeConverter.printHexBinary(sig3);
+
+        assertEquals(sig1Str, sig2Str, sig1Str + " should be " + sig2Str);
+        assertNotEquals(sig1Str, sig3Str, sig3Str + " should not be " + sig1Str);
+
+        boolean result = NativeSecp256k1.schnorrVerify(data, sig1, pubkey);
+        assertEquals(result, true, "schnorrSignWithNonce should produce a valid signature");
+
+        String noncePubStr = DatatypeConverter.printHexBinary(noncePubKey);
+
+        assertEquals(sig1Str.substring(0, noncePubStr.length()), noncePubStr, noncePubStr + " should prefix " + sig1Str);
+
+        assertEquals(sig3Str, "00DA9B08172A9B6F0466A2DEFD817F2D7AB437E0D253CB5395A963866B3574BE00880371D01766935B92D2AB4CD5C8A2A5837EC57FED7660773A05F0DE142380", "schnorrSignWithNonce 3");
+    }
+
     public static void testCreateECDHSecret() throws AssertFailException{
         byte[] sec = DatatypeConverter.parseHexBinary("67E56582298859DDAE725F972992A07C6C4FB9F62A8FFF58CE3CA926A1063530");
         byte[] pub = DatatypeConverter.parseHexBinary("040A629506E1B65CD9D2E0BA9C75DF9C4FED0DB16DC9625ED14397F0AFC836FAE595DC53F8B0EFE61E703075BD9B143BAC75EC0E19F82A2208CAEB32BE53414C40");
@@ -436,6 +541,13 @@ public class NativeSecp256k1Test {
 
         //Test schnorrSign()
         testSchnorrSign();
+
+        //Test schnorrSignWithNonce() against 1st case
+        testSchnorrSignWithNonce1();
+        //Test schnorrSignWithNonce() against 2nd case
+        testSchnorrSignWithNonce2();
+        //Test schnorrSignWithNonce() against 3rd case
+        testSchnorrSignWithNonce3();
 
         //Test ECDH
         testCreateECDHSecret();
