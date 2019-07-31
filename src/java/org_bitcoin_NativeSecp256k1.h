@@ -114,6 +114,14 @@ SECP256K1_API jint JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsi
 
 /*
  * Class:     org_bitcoin_NativeSecp256k1
+ * Method:    secp256k1_schnorrsig_compute_pubkey
+ * Signature: (Ljava/nio/ByteBuffer;JI)I
+ */
+SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1compute_1pubkey
+  (JNIEnv *, jclass, jobject, jlong);
+
+/*
+ * Class:     org_bitcoin_NativeSecp256k1
  * Method:    secp256k1_schnorrsig_sign
  * Signature: (Ljava/nio/ByteBuffer;J)[[B
  */
