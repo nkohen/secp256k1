@@ -353,6 +353,49 @@ SECP256K1_API jint JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsi
   return ret;
 }
 
+SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1compute_1pubkey
+  (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l)
+{
+  secp256k1_pubkey r;
+  secp256k1_pubkey pk;
+  int r_valid;
+  int pk_valid;
+  secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
+  const unsigned char* raw_r = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
+  unsigned char* msg = (unsigned char*) (raw_r + 33);
+  const unsigned char* raw_pk = (unsigned char*) (msg + 32);
+
+  jobjectArray retArray;
+  jbyteArray keyArray, intsByteArray;
+  unsigned char intsarray[1];
+  secp256k1_pubkey sp;
+  unsigned char serialized_sp[33];
+  size_t sp_len = sizeof(serialized_sp);
+
+  r_valid = secp256k1_ec_pubkey_parse(ctx, &r, raw_r, 33);
+  pk_valid = secp256k1_ec_pubkey_parse(ctx, &pk, raw_pk, 33);
+
+  intsarray[0] = secp256k1_schnorrsig_sig_pubkey(ctx, &sp, &r, msg, &pk);
+
+  secp256k1_ec_pubkey_serialize(ctx, serialized_sp, &sp_len, &sp, SECP256K1_EC_COMPRESSED);
+
+  retArray = (*env)->NewObjectArray(env, 2,
+    (*env)->FindClass(env, "[B"),
+    (*env)->NewByteArray(env, 1));
+
+  keyArray = (*env)->NewByteArray(env, 33);
+  (*env)->SetByteArrayRegion(env, keyArray, 0, 33, (jbyte*)&serialized_sp);
+  (*env)->SetObjectArrayElement(env, retArray, 0, keyArray);
+
+  intsByteArray = (*env)->NewByteArray(env, 1);
+  (*env)->SetByteArrayRegion(env, intsByteArray, 0, 1, (jbyte*)intsarray);
+  (*env)->SetObjectArrayElement(env, retArray, 1, intsByteArray);
+
+  (void)classObject;
+
+  return retArray;
+}
+
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1sign
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l)
 {
