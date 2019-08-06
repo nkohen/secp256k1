@@ -390,7 +390,12 @@ public class NativeSecp256k1Test {
         byte[] pubkey = DatatypeConverter.parseHexBinary("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
 
         byte[] nonce = DatatypeConverter.parseHexBinary("0000000000000000000000000000000000000000000000000000000000000002");
-        byte[] noncePubKey = DatatypeConverter.parseHexBinary("c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5");
+        String noncePubKeyHex = "c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5";
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary(noncePubKeyHex);
+        String expectedNoncePubKey = DatatypeConverter.printHexBinary(NativeSecp256k1.schnorrPublicNonce(nonce));
+
+        assertEquals(expectedNoncePubKey.substring(0, 2), "02", "schnorrPublicNonce should produce the correct y coordinate");
+        assertEquals(noncePubKeyHex.toUpperCase(), expectedNoncePubKey.substring(2), "schnorrPublicNonce should produce a valid x coordinate");
 
         byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("58e8f2a1f78f0a591feb75aebecaaa81076e4290894b1c445cc32953604db089");
 
@@ -425,7 +430,12 @@ public class NativeSecp256k1Test {
         byte[] pubkey = DatatypeConverter.parseHexBinary("02dff1d77f2a671c5f36183726db2341be58feae1da2deced843240f7b502ba659");
 
         byte[] nonce = DatatypeConverter.parseHexBinary("67cbfa3d322bbabc3e15510789a7ae670cde7aaccd1d7d966aa51345381c6c6f");
-        byte[] noncePubKey = DatatypeConverter.parseHexBinary("2c73d693e9dbf1caec8bb2de97e92b971573ef9773ae56ca4c11add9a8182aaf");
+        String noncePubKeyHex = "2c73d693e9dbf1caec8bb2de97e92b971573ef9773ae56ca4c11add9a8182aaf";
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary(noncePubKeyHex);
+        String expectedNoncePubKey = DatatypeConverter.printHexBinary(NativeSecp256k1.schnorrPublicNonce(nonce));
+
+        assertEquals(expectedNoncePubKey.substring(0, 2), "03", "schnorrPublicNonce should produce the correct y coordinate");
+        assertEquals(noncePubKeyHex.toUpperCase(), expectedNoncePubKey.substring(2), "schnorrPublicNonce should produce a valid x coordinate");
 
         byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("921d79a6345d16c7cf9df63620753cf69ef45db8731005cb9a3a89d757e0a5e4");
 
@@ -460,7 +470,12 @@ public class NativeSecp256k1Test {
         byte[] pubkey = DatatypeConverter.parseHexBinary("03fac2114c2fbb091527eb7c64ecb11f8021cb45e8e7809d3c0938e4b8c0e5f84b");
 
         byte[] nonce = DatatypeConverter.parseHexBinary("d00b4d3404e9cfe04b5cc6d9834e6c03acb6d4cf30d10ee733db996c5cc39eba");
-        byte[] noncePubKey = DatatypeConverter.parseHexBinary("ef29043b0cb2bc7fe1174f7bbf950c20436dbb835f8d892819b9a1beba48eb0c");
+        String noncePubKeyHex = "ef29043b0cb2bc7fe1174f7bbf950c20436dbb835f8d892819b9a1beba48eb0c";
+        byte[] noncePubKey = DatatypeConverter.parseHexBinary(noncePubKeyHex);
+        String expectedNoncePubKey = DatatypeConverter.printHexBinary(NativeSecp256k1.schnorrPublicNonce(nonce));
+
+        assertEquals(expectedNoncePubKey.substring(0, 2), "03", "schnorrPublicNonce should produce the correct y coordinate");
+        assertEquals(noncePubKeyHex.toUpperCase(), expectedNoncePubKey.substring(2), "schnorrPublicNonce should produce a valid x coordinate");
 
         byte[] bipSchnorrNonce = DatatypeConverter.parseHexBinary("688d7ea518846efebd8372ac6b7a3ed82927d078a4572c65cbc8729002a990b6");
 

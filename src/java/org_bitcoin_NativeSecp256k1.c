@@ -384,6 +384,40 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1s
   return retArray;
 }
 
+SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1pubnonce
+  (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l)
+{
+  secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
+  secp256k1_schnorrnonce* nonce = (secp256k1_schnorrnonce*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
+
+  jobjectArray retArray;
+  jbyteArray pubNonceArray, intsByteArray;
+  unsigned char intsarray[1];
+  secp256k1_pubkey pubnonce;
+  unsigned char pubnonce_bytes[33];
+  size_t pubnoncelen = sizeof(pubnonce_bytes);
+
+  intsarray[0] = secp256k1_schnorrsig_pubnonce(ctx, &pubnonce, nonce);
+
+  secp256k1_ec_pubkey_serialize(ctx, pubnonce_bytes, &pubnoncelen, &pubnonce, SECP256K1_EC_COMPRESSED);
+
+  retArray = (*env)->NewObjectArray(env, 2,
+    (*env)->FindClass(env, "[B"),
+    (*env)->NewByteArray(env, 1));
+
+  pubNonceArray = (*env)->NewByteArray(env, 33);
+  (*env)->SetByteArrayRegion(env, pubNonceArray, 0, 33, (jbyte*)&pubnonce_bytes);
+  (*env)->SetObjectArrayElement(env, retArray, 0, pubNonceArray);
+
+  intsByteArray = (*env)->NewByteArray(env, 1);
+  (*env)->SetByteArrayRegion(env, intsByteArray, 0, 1, (jbyte*)intsarray);
+  (*env)->SetObjectArrayElement(env, retArray, 1, intsByteArray);
+
+  (void)classObject;
+
+  return retArray;
+}
+
 int constant_nonce_function(unsigned char *nonce32, const unsigned char *msg32, const unsigned char *key32, const unsigned char *algo16, void *data, unsigned int counter) {
   memcpy(nonce32, (const unsigned char*)data, 32);
   return 1;
