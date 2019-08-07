@@ -25,6 +25,12 @@ typedef struct {
     unsigned char data[64];
 } secp256k1_schnorrsig;
 
+/** Opaque data structure that holds a nonce to be used in a Schnorr signature.
+ */
+typedef struct {
+    unsigned char data[32];
+} secp256k1_schnorrnonce;
+
 /** Serialize a Schnorr signature.
  *
  *  Returns: 1
@@ -118,6 +124,36 @@ SECP256K1_API SECP256K1_WARN_UNUSED_RESULT int secp256k1_schnorrsig_verify_batch
     const secp256k1_pubkey *const *pk,
     size_t n_sigs
 ) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2);
+
+/** Computes the public key, associated with either the nonce or its inverse, that will be used in the signature
+ *
+ *  Returns: 1 when nonce is nonzero, 0 otherwise.
+ *  Args:    ctx: a secp256k1 context object
+ *  Out:       r: pointer to the nonce's public key (either k*G or -k*G)
+ *  In:        k: pointer to the nonce
+ */
+SECP256K1_API int secp256k1_schnorrsig_pubnonce(
+    const secp256k1_context* ctx,
+    secp256k1_pubkey* r,
+    const secp256k1_schnorrnonce* k
+) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3);
+
+/** Computes the signature times the generator from a pre-committed R value.
+ *
+ * Returns 1 on success, 0 on failure.
+ *  Args:    ctx: pointer to a context object (cannot be NULL)
+ *  Out:     sp: pointer to the returned signature pubkey (cannot be NULL)
+ *  In:       r: the pre-committed R value for the signature (cannot be NULL)
+ *         msg32: the 32-byte message being signed (cannot be NULL)
+ *            pk: pointer to a public key of the signer (cannot be NULL)
+ */
+SECP256K1_API int secp256k1_schnorrsig_sig_pubkey(
+    const secp256k1_context* ctx,
+    secp256k1_pubkey *sp,
+    secp256k1_pubkey *r,
+    const unsigned char *msg32,
+    const secp256k1_pubkey *pk
+) SECP256K1_ARG_NONNULL(1) SECP256K1_ARG_NONNULL(2) SECP256K1_ARG_NONNULL(3) SECP256K1_ARG_NONNULL(4) SECP256K1_ARG_NONNULL(5);
 
 #ifdef __cplusplus
 }

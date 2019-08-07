@@ -329,4 +329,84 @@ int secp256k1_schnorrsig_verify_batch(const secp256k1_context *ctx, secp256k1_sc
             && secp256k1_gej_is_infinity(&rj);
 }
 
+int secp256k1_schnorrsig_pubnonce(const secp256k1_context* ctx, secp256k1_pubkey* r, const secp256k1_schnorrnonce* k) {
+    secp256k1_scalar k_scalar;
+    secp256k1_gej r_gej;
+    secp256k1_ge r_ge;
+
+    VERIFY_CHECK(ctx != NULL);
+    ARG_CHECK(r != NULL);
+    ARG_CHECK(k != NULL);
+
+    secp256k1_scalar_set_b32(&k_scalar, k->data, NULL);
+
+    if (secp256k1_scalar_is_zero(&k_scalar)) {
+        return 0;
+    }
+
+    secp256k1_ecmult_gen(&ctx->ecmult_gen_ctx, &r_gej, &k_scalar);
+    secp256k1_ge_set_gej(&r_ge, &r_gej);
+
+    if (!secp256k1_fe_is_quad_var(&r_ge.y)) {
+        secp256k1_scalar_negate(&k_scalar, &k_scalar);
+        secp256k1_ecmult_gen(&ctx->ecmult_gen_ctx, &r_gej, &k_scalar);
+        secp256k1_ge_set_gej(&r_ge, &r_gej);
+    }
+
+
+    secp256k1_pubkey_save(r, &r_ge);
+
+    return 1;
+}
+
+int secp256k1_schnorrsig_sig_pubkey(const secp256k1_context* ctx, secp256k1_pubkey *sp, secp256k1_pubkey *r, const unsigned char *msg32, const secp256k1_pubkey *pk) {
+    secp256k1_ge pkp;
+    secp256k1_gej pkj;
+    secp256k1_sha256 sha;
+    secp256k1_pubkey epk;
+    secp256k1_ge rp;
+    unsigned char rpub[32];
+    secp256k1_pubkey* summands[2];
+    unsigned char buf[33];
+    size_t buflen = sizeof(buf);
+
+    VERIFY_CHECK(ctx != NULL);
+    ARG_CHECK(secp256k1_ecmult_context_is_built(&ctx->ecmult_ctx));
+    ARG_CHECK(r != NULL);
+    ARG_CHECK(msg32 != NULL);
+    ARG_CHECK(pk != NULL);
+
+    if (!secp256k1_pubkey_load(ctx, &pkp, pk)) {
+        return 0;
+    }
+    secp256k1_gej_set_ge(&pkj, &pkp);
+
+    if (!secp256k1_pubkey_load(ctx, &rp, r)) {
+        return 0;
+    }
+
+    secp256k1_fe_normalize(&rp.x);
+    secp256k1_fe_get_b32(rpub, &rp.x);
+
+    secp256k1_sha256_initialize(&sha);
+    secp256k1_sha256_write(&sha, rpub, 32);
+    secp256k1_eckey_pubkey_serialize(&pkp, buf, &buflen, 1);
+    secp256k1_sha256_write(&sha, buf, buflen);
+    secp256k1_sha256_write(&sha, msg32, 32);
+    secp256k1_sha256_finalize(&sha, buf);
+
+    secp256k1_pubkey_save(&epk, &pkp);
+
+    /* e*pk */
+    if (!secp256k1_ec_pubkey_tweak_mul(ctx, &epk, (unsigned char*) &buf)) {
+        return 0;
+    }
+
+    summands[0] = &epk;
+    summands[1] = r;
+
+    /* r + e*pk */
+    return secp256k1_ec_pubkey_combine(ctx, sp, summands, 2);
+}
+
 #endif
