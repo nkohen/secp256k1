@@ -146,6 +146,11 @@ AC_ARG_ENABLE(external_default_callbacks,
     [use_external_default_callbacks=$enableval],
     [use_external_default_callbacks=no])
 
+AC_ARG_ENABLE(jni,
+    AS_HELP_STRING([--enable-jni],[enable libsecp256k1_jni [default=no]]),
+    [use_jni=$enableval],
+    [use_jni=no])
+
 AC_ARG_WITH([field], [AS_HELP_STRING([--with-field=64bit|32bit|auto],
 [finite field implementation to use [default=auto]])],[req_field=$withval], [req_field=auto])
 
@@ -477,6 +482,29 @@ else
   fi
 fi
 
+if test x"$use_jni" != x"no"; then
+  AX_JNI_INCLUDE_DIR
+  have_jni_dependencies=yes
+  if test x"$enable_module_ecdh" = x"no"; then
+    have_jni_dependencies=no
+  fi
+  if test "x$JNI_INCLUDE_DIRS" = "x"; then
+    have_jni_dependencies=no
+  fi
+  if test "x$have_jni_dependencies" = "xno"; then
+    if test x"$use_jni" = x"yes"; then
+      AC_MSG_ERROR([jni support explicitly requested but headers/dependencies were not found. Enable ECDH and try again.])
+    fi
+    AC_MSG_WARN([jni headers/dependencies not found. jni support disabled])
+    use_jni=no
+  else
+    use_jni=yes
+    for JNI_INCLUDE_DIR in $JNI_INCLUDE_DIRS; do
+      JNI_INCLUDES="$JNI_INCLUDES -I$JNI_INCLUDE_DIR"
+    done
+  fi
+fi
+
 if test x"$set_bignum" = x"gmp"; then
   SECP_LIBS="$SECP_LIBS $GMP_LIBS"
   SECP_INCLUDES="$SECP_INCLUDES $GMP_CPPFLAGS"
@@ -529,6 +557,7 @@ fi
 
 AC_CONFIG_HEADERS([src/libsecp256k1-config.h])
 AC_CONFIG_FILES([Makefile libsecp256k1.pc])
+AC_SUBST(JNI_INCLUDES)
 AC_SUBST(SECP_INCLUDES)
 AC_SUBST(SECP_LIBS)
 AC_SUBST(SECP_TEST_LIBS)
@@ -541,6 +570,7 @@ AM_CONDITIONAL([USE_ECMULT_STATIC_PRECOMPUTATION], [test x"$set_precomp" = x"yes
 AM_CONDITIONAL([ENABLE_MODULE_ECDH], [test x"$enable_module_ecdh" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_RECOVERY], [test x"$enable_module_recovery" = x"yes"])
 AM_CONDITIONAL([ENABLE_MODULE_ECDSA_ADAPTOR], [test x"$enable_module_ecdsa_adaptor" = x"yes"])
+AM_CONDITIONAL([USE_JNI], [test x"$use_jni" = x"yes"])
 AM_CONDITIONAL([USE_EXTERNAL_ASM], [test x"$use_external_asm" = x"yes"])
 AM_CONDITIONAL([USE_ASM_ARM], [test x"$set_asm" = x"arm"])
 
@@ -556,6 +586,7 @@ echo "Build Options:"
 echo "  with endomorphism       = $use_endomorphism"
 echo "  with ecmult precomp     = $set_precomp"
 echo "  with external callbacks = $use_external_default_callbacks"
+echo "  with jni                = $use_jni"
 echo "  with benchmarks         = $use_benchmark"
 echo "  with coverage           = $enable_coverage"
 echo "  module ecdh             = $enable_module_ecdh"
