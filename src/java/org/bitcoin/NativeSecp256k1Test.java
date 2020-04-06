@@ -210,6 +210,54 @@ public class NativeSecp256k1Test {
         assertEquals( ecdhString, "2A2A67007A926E6594AF3EB564FC74005B37A9C8AEF2033C4552051B5C87F043" , "testCreateECDHSecret");
     }
 
+    public static void testAdaptorSign() throws AssertFailException {
+        byte[] msg = DatatypeConverter.parseHexBinary("");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("");
+        byte[] seckey = DatatypeConverter.parseHexBinary("");
+        String expectedAdaptorSig = "";
+        String expectedAdaptorProof = "";
+
+        byte[] resultArr = NativeSecp256k1.adaptorSign(seckey, adaptor, msg);
+
+        assertEquals(resultArr.length, 2, "testAdaptorSign");
+
+        String adaptorSig = DatatypeConverter.printHexBinary(resultArr).toLowerCase();
+        assertEquals(adaptorSig, expectedAdaptorSig + expectedAdaptorProof, "testAdaptorSign");
+    }
+
+    public static void testAdaptorVeirfy() throws AssertFailException {
+        byte[] msg = DatatypeConverter.parseHexBinary("");
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
+        byte[] adaptorProof = DatatypeConverter.parseHexBinary("");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("");
+        byte[] pubkey = DatatypeConverter.parseHexBinary("");
+
+        boolean result = NativeSecp256k1.adaptorVerify(adaptorSig, pubkey, msg, adaptor, adaptorProof);
+
+        assertEquals( result, true , "testAdaptorVeirfy");
+    }
+
+    public static void testAdaptorAdapt() throws AssertFailException {
+        byte[] secret = DatatypeConverter.parseHexBinary("");
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
+
+        byte[] resultArr = NativeSecp256k1.adaptorAdapt(secret, adaptorSig);
+
+        String sigString = DatatypeConverter.printHexBinary(resultArr);
+        assertEquals(sigString , "" , "testAdaptorAdapt");
+    }
+
+    public static void testAdaptorExtractSecret() throws AssertFailException {
+        byte[] sig = DatatypeConverter.parseHexBinary("".toLowerCase());
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("");
+
+        byte[] resultArr = NativeSecp256k1.adaptorExtractSecret(sig, adaptorSig, adaptor);
+
+        String sigString = DatatypeConverter.printHexBinary(resultArr);
+        assertEquals(sigString , "" , "testAdaptorExtractSecret");
+    }
+
     public static void main(String[] args) throws AssertFailException{
         
         System.out.println("\n libsecp256k1 enabled: " + Secp256k1Context.isEnabled() + "\n");
@@ -254,6 +302,18 @@ public class NativeSecp256k1Test {
 
         //Test ECDH
         testCreateECDHSecret();
+
+        //Test adaptor signing
+        testAdaptorSign();
+
+        //Test adaptor signature verification
+        testAdaptorVeirfy();
+
+        //Test adaptor completion
+        testAdaptorAdapt();
+
+        //Test secret extraction from adaptor signature
+        testAdaptorExtractSecret();
 
         NativeSecp256k1.cleanup();
 
