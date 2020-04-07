@@ -211,26 +211,26 @@ public class NativeSecp256k1Test {
     }
 
     public static void testAdaptorSign() throws AssertFailException {
-        byte[] msg = DatatypeConverter.parseHexBinary("");
-        byte[] adaptor = DatatypeConverter.parseHexBinary("");
-        byte[] seckey = DatatypeConverter.parseHexBinary("");
-        String expectedAdaptorSig = "";
-        String expectedAdaptorProof = "";
+        byte[] msg = DatatypeConverter.parseHexBinary("024BDD11F2144E825DB05759BDD9041367A420FAD14B665FD08AF5B42056E5E2");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("038D48057FC4CE150482114D43201B333BF3706F3CD527E8767CEB4B443AB5D349");
+        byte[] seckey = DatatypeConverter.parseHexBinary("90AC0D5DC0A1A9AB352AFB02005A5CC6C4DF0DA61D8149D729FF50DB9B5A5215");
+        String expectedAdaptorSig = "01099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F47BB90E2AD6630900B69F55674C8AD74A419E6CE113C10A21A79345A6E47BC74C1";
+        String expectedAdaptorProof = "00AB34C2BF4EF119940CA374A8C5C7D5A244913E91FBC6A1FB77B5CD0F5DD33B07E96C2BE88A93C82C81D3FE246B7F8C4DF639C7DE77C48CF6FEB413C5CB7240FE708F403BA46194B3725280FC38E36CA97278BCDD8E3AD3C1EEF085CDA5AA4A0E";
 
         byte[] resultArr = NativeSecp256k1.adaptorSign(seckey, adaptor, msg);
 
         assertEquals(resultArr.length, 2, "testAdaptorSign");
 
-        String adaptorSig = DatatypeConverter.printHexBinary(resultArr).toLowerCase();
+        String adaptorSig = DatatypeConverter.printHexBinary(resultArr);
         assertEquals(adaptorSig, expectedAdaptorSig + expectedAdaptorProof, "testAdaptorSign");
     }
 
     public static void testAdaptorVeirfy() throws AssertFailException {
-        byte[] msg = DatatypeConverter.parseHexBinary("");
-        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
-        byte[] adaptorProof = DatatypeConverter.parseHexBinary("");
-        byte[] adaptor = DatatypeConverter.parseHexBinary("");
-        byte[] pubkey = DatatypeConverter.parseHexBinary("");
+        byte[] msg = DatatypeConverter.parseHexBinary("024BDD11F2144E825DB05759BDD9041367A420FAD14B665FD08AF5B42056E5E2");
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("01099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F47BB90E2AD6630900B69F55674C8AD74A419E6CE113C10A21A79345A6E47BC74C1");
+        byte[] adaptorProof = DatatypeConverter.parseHexBinary("00AB34C2BF4EF119940CA374A8C5C7D5A244913E91FBC6A1FB77B5CD0F5DD33B07E96C2BE88A93C82C81D3FE246B7F8C4DF639C7DE77C48CF6FEB413C5CB7240FE708F403BA46194B3725280FC38E36CA97278BCDD8E3AD3C1EEF085CDA5AA4A0E");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("038D48057FC4CE150482114D43201B333BF3706F3CD527E8767CEB4B443AB5D349");
+        byte[] pubkey = DatatypeConverter.parseHexBinary("03490CEC9A53CD8F2F664AEA61922F26EE920C42D2489778BB7C9D9ECE44D149A7");
 
         boolean result = NativeSecp256k1.adaptorVerify(adaptorSig, pubkey, msg, adaptor, adaptorProof);
 
@@ -238,24 +238,26 @@ public class NativeSecp256k1Test {
     }
 
     public static void testAdaptorAdapt() throws AssertFailException {
-        byte[] secret = DatatypeConverter.parseHexBinary("");
-        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
+        byte[] secret = DatatypeConverter.parseHexBinary("475697A71A74FF3F2A8F150534E9B67D4B0B6561FAB86FCAA51F8C9D6C9DB8C6");
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("01099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F47BB90E2AD6630900B69F55674C8AD74A419E6CE113C10A21A79345A6E47BC74C1");
 
         byte[] resultArr = NativeSecp256k1.adaptorAdapt(secret, adaptorSig);
 
+        String expectedSig = "30440220099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F4702204D13456E98D8989043FD4674302CE90C432E2F8BB0269F02C72AAFEC60B72DE1";
         String sigString = DatatypeConverter.printHexBinary(resultArr);
-        assertEquals(sigString , "" , "testAdaptorAdapt");
+        assertEquals(sigString , expectedSig , "testAdaptorAdapt");
     }
 
     public static void testAdaptorExtractSecret() throws AssertFailException {
-        byte[] sig = DatatypeConverter.parseHexBinary("".toLowerCase());
-        byte[] adaptorSig = DatatypeConverter.parseHexBinary("");
-        byte[] adaptor = DatatypeConverter.parseHexBinary("");
+        byte[] sig = DatatypeConverter.parseHexBinary("30440220099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F4702204D13456E98D8989043FD4674302CE90C432E2F8BB0269F02C72AAFEC60B72DE1");
+        byte[] adaptorSig = DatatypeConverter.parseHexBinary("01099C91AA1FE7F25C41085C1D3C9E73FE04A9D24DAC3F9C2172D6198628E57F47BB90E2AD6630900B69F55674C8AD74A419E6CE113C10A21A79345A6E47BC74C1");
+        byte[] adaptor = DatatypeConverter.parseHexBinary("038D48057FC4CE150482114D43201B333BF3706F3CD527E8767CEB4B443AB5D349");
 
         byte[] resultArr = NativeSecp256k1.adaptorExtractSecret(sig, adaptorSig, adaptor);
 
+        String expectedSecret = "475697A71A74FF3F2A8F150534E9B67D4B0B6561FAB86FCAA51F8C9D6C9DB8C6";
         String sigString = DatatypeConverter.printHexBinary(resultArr);
-        assertEquals(sigString , "" , "testAdaptorExtractSecret");
+        assertEquals(sigString , expectedSecret , "testAdaptorExtractSecret");
     }
 
     public static void main(String[] args) throws AssertFailException{
