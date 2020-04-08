@@ -237,6 +237,49 @@ public class NativeSecp256k1Test {
         assertEquals( ecdhString, "2A2A67007A926E6594AF3EB564FC74005B37A9C8AEF2033C4552051B5C87F043" , "testCreateECDHSecret");
     }
 
+    public static void testSchnorrSign() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("E48441762FB75010B2AA31A512B62B4148AA3FB08EB0765D76B252559064A614");
+        byte[] secKey = DatatypeConverter.parseHexBinary("688C77BC2D5AAFF5491CF309D4753B732135470D05B7B2CD21ADD0744FE97BEF");
+        byte[] auxRand = DatatypeConverter.parseHexBinary("02CCE08E913F22A36C5648D6405A2C7C50106E7AA2F1649E381C7F09D16B80AB");
+
+        byte[] sigArr = NativeSecp256k1.schnorrSign(data, secKey, auxRand);
+        String sigStr = DatatypeConverter.printHexBinary(sigArr);
+        String expectedSig = "6470FD1303DDA4FDA717B9837153C24A6EAB377183FC438F939E0ED2B620E9EE5077C4A8B8DCA28963D772A94F5F0DDF598E1C47C137F91933274C7C3EDADCE8";
+        assertEquals(sigStr, expectedSig, "testSchnorrSign");
+    }
+
+    public static void testSchnorrSignWithNonce() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("E48441762FB75010B2AA31A512B62B4148AA3FB08EB0765D76B252559064A614");
+        byte[] secKey = DatatypeConverter.parseHexBinary("688C77BC2D5AAFF5491CF309D4753B732135470D05B7B2CD21ADD0744FE97BEF");
+        byte[] nonce = DatatypeConverter.parseHexBinary("8C8CA771D3C25EB38DE7401818EEDA281AC5446F5C1396148F8D9D67592440FE");
+
+        byte[] sigArr = NativeSecp256k1.schnorrSignWithNonce(data, secKey, nonce);
+        String sigStr = DatatypeConverter.printHexBinary(sigArr);
+        String expectedSig = "5DA618C1936EC728E5CCFF29207F1680DCF4146370BDCFAB0039951B91E3637A958E91D68537D1F6F19687CEC1FD5DB1D83DA56EF3ADE1F3C611BABD7D08AF42";
+        assertEquals(sigStr, expectedSig, "testSchnorrSignWithNonce");
+    }
+    
+    public static void testSchnorrComputeSigPoint() throws AssertFailException{
+        byte[] data = DatatypeConverter.parseHexBinary("E48441762FB75010B2AA31A512B62B4148AA3FB08EB0765D76B252559064A614");
+        byte[] nonce = DatatypeConverter.parseHexBinary("F14D7E54FF58C5D019CE9986BE4A0E8B7D643BD08EF2CDF1099E1A457865B547");
+        byte[] pubKey = DatatypeConverter.parseHexBinary("B33CC9EDC096D0A83416964BD3C6247B8FECD256E4EFA7870D2C854BDEB33390");
+
+        byte[] pointArr = NativeSecp256k1.schnorrComputeSigPoint(data, nonce, pubKey, true);
+        String pointStr = DatatypeConverter.printHexBinary(pointArr);
+        String expectedPoint = "03735ACF82EEF9DA1540EFB07A68251D5476DABB11AC77054924ECCBB4121885E8";
+        assertEquals(pointStr, expectedPoint, "testSchnorrComputeSigPoint");
+    }
+
+    public static void testSchnorrVerify() throws AssertFailException{
+        byte[] sig = DatatypeConverter.parseHexBinary("6470FD1303DDA4FDA717B9837153C24A6EAB377183FC438F939E0ED2B620E9EE5077C4A8B8DCA28963D772A94F5F0DDF598E1C47C137F91933274C7C3EDADCE8");
+        byte[] data = DatatypeConverter.parseHexBinary("E48441762FB75010B2AA31A512B62B4148AA3FB08EB0765D76B252559064A614");
+        byte[] pubx = DatatypeConverter.parseHexBinary("B33CC9EDC096D0A83416964BD3C6247B8FECD256E4EFA7870D2C854BDEB33390");
+
+        boolean result = NativeSecp256k1.schnorrVerify(sig, data, pubx);
+
+        assertEquals(result, true, "testSchnorrVerify");
+    }
+
     public static void main(String[] args) throws AssertFailException{
         
         System.out.println("\n libsecp256k1 enabled: " + Secp256k1Context.isEnabled() + "\n");
@@ -285,6 +328,12 @@ public class NativeSecp256k1Test {
 
         //Test ECDH
         testCreateECDHSecret();
+
+        //Test Schnorr Signing
+        testSchnorrSign();
+        testSchnorrSignWithNonce();
+        testSchnorrComputeSigPoint();
+        testSchnorrVerify();
 
         NativeSecp256k1.cleanup();
 
