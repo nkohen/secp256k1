@@ -132,8 +132,6 @@ endif
 
 JAVAROOT=src/java
 JAVAORG=org/bitcoin
-JAVA_GUAVA=$(srcdir)/$(JAVAROOT)/guava/guava-18.0.jar
-CLASSPATH_ENV=CLASSPATH=$(JAVA_GUAVA)
 JAVA_FILES= \
   $(JAVAROOT)/$(JAVAORG)/NativeSecp256k1.java \
   $(JAVAROOT)/$(JAVAORG)/NativeSecp256k1Test.java \
@@ -151,6 +149,8 @@ if USE_TESTS
 
 check-java: libsecp256k1.la .stamp-java
 	$(AM_V_at)java -Djava.library.path="./:./src:./src/.libs:.libs/" -cp "$(JAVAROOT)" $(JAVAORG)/NativeSecp256k1Test
+
+TESTS += check-java
 
 endif
 endif
